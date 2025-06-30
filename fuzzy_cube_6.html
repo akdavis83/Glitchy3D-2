@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzzy Cube 6 - 3D to Flat Glitch</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #0a0a0a, #1a1a2e, #16213e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            perspective: 1000px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .cube-container {
+            position: relative;
+            transform-style: preserve-3d;
+            animation: 
+                rotate 4s infinite linear,
+                dimensionGlitch 8s infinite;
+        }
+
+        .cube {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            transform-style: preserve-3d;
+        }
+
+        .face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #00ff41;
+            box-sizing: border-box;
+            backdrop-filter: blur(5px);
+            animation: 
+                colorShift 3s infinite ease-in-out,
+                faceGlitch 2s infinite;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .front { 
+            background: linear-gradient(45deg, #ff0080, #00ff80, #8000ff, #ff8000);
+            transform: translateZ(100px); 
+        }
+        .back { 
+            background: linear-gradient(45deg, #0080ff, #ff0040, #80ff00, #ff4000);
+            transform: translateZ(-100px) rotateY(180deg); 
+        }
+        .right { 
+            background: linear-gradient(45deg, #ff8040, #4080ff, #80ff40, #ff0040);
+            transform: rotateY(90deg) translateZ(100px); 
+        }
+        .left { 
+            background: linear-gradient(45deg, #8040ff, #40ff80, #ff8080, #4040ff);
+            transform: rotateY(-90deg) translateZ(100px); 
+        }
+        .top { 
+            background: linear-gradient(45deg, #ff4080, #80ff40, #4080ff, #ff8040);
+            transform: rotateX(90deg) translateZ(100px); 
+        }
+        .bottom { 
+            background: linear-gradient(45deg, #4040ff, #ff4040, #40ff40, #8080ff);
+            transform: rotateX(-90deg) translateZ(100px); 
+        }
+
+        .noise-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.4;
+            mix-blend-mode: overlay;
+            background-size: 2px 2px;
+            animation: noise 0.1s infinite;
+        }
+
+        .glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            animation: scanLine 3s infinite linear;
+        }
+
+        /* Main rotation animation */
+        @keyframes rotate {
+            from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            to { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        /* Dimension glitch - 3D cube collapses to flat square */
+        @keyframes dimensionGlitch {
+            0%, 70% { 
+                /* Normal 3D cube state */
+                transform: scale(1);
+                filter: none;
+            }
+            71% { 
+                /* Begin glitch - slight distortion */
+                transform: scale(1.02);
+                filter: hue-rotate(90deg) brightness(1.5);
+            }
+            72% { 
+                /* Collapse Z-axis - start flattening */
+                transform: scale(1, 1, 0.5);
+                filter: hue-rotate(180deg) brightness(0.7) contrast(2);
+            }
+            74% { 
+                /* Further collapse - almost flat */
+                transform: scale(1, 1, 0.1);
+                filter: hue-rotate(270deg) brightness(1.8) contrast(0.5);
+            }
+            76% { 
+                /* Completely flat square */
+                transform: scale(1, 1, 0);
+                filter: hue-rotate(360deg) brightness(0.3) contrast(3) invert(0.2);
+            }
+            78% { 
+                /* Stay flat for a moment */
+                transform: scale(1, 1, 0);
+                filter: hue-rotate(45deg) brightness(2) contrast(0.2) invert(0.5);
+            }
+            80% { 
+                /* Begin restoration */
+                transform: scale(1, 1, 0.2);
+                filter: hue-rotate(135deg) brightness(1.2) contrast(1.5);
+            }
+            82% { 
+                /* Expanding back */
+                transform: scale(1, 1, 0.6);
+                filter: hue-rotate(225deg) brightness(0.8) contrast(1.8);
+            }
+            84% { 
+                /* Almost restored */
+                transform: scale(1, 1, 0.9);
+                filter: hue-rotate(315deg) brightness(1.4) contrast(0.8);
+            }
+            86% { 
+                /* Restored with glitch residue */
+                transform: scale(1);
+                filter: hue-rotate(0deg) brightness(1.1) contrast(1.1);
+            }
+            88%, 100% { 
+                /* Back to normal */
+                transform: scale(1);
+                filter: none;
+            }
+        }
+
+        /* Color shift animation */
+        @keyframes colorShift {
+            0%, 100% { filter: hue-rotate(0deg) saturate(1.2) brightness(1.1); }
+            25% { filter: hue-rotate(90deg) saturate(1.6) brightness(0.8); }
+            50% { filter: hue-rotate(180deg) saturate(0.8) brightness(1.4); }
+            75% { filter: hue-rotate(270deg) saturate(1.8) brightness(0.9); }
+        }
+
+        /* Face glitch effects */
+        @keyframes faceGlitch {
+            0%, 85% {
+                transform: translate(0);
+                box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            }
+            86% {
+                transform: translate(-2px, 2px);
+                box-shadow: 0 0 20px rgba(255, 0, 65, 0.5);
+            }
+            88% {
+                transform: translate(2px, -2px);
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            }
+            90% {
+                transform: translate(-1px, -1px);
+                box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
+            }
+        }
+
+        /* Scanline animation */
+        @keyframes scanLine {
+            0% { top: 0%; opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { top: 100%; opacity: 1; }
+        }
+
+        /* TV static noise */
+        @keyframes noise {
+            0%, 100% { 
+                background-image: 
+                    radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
+                    radial-gradient(circle at 75% 25%, white 1px, transparent 1px),
+                    radial-gradient(circle at 40% 80%, white 1px, transparent 1px);
+            }
+            10% { 
+                background-image: 
+                    radial-gradient(circle at 60% 30%, white 1px, transparent 1px),
+                    radial-gradient(circle at 15% 70%, white 1px, transparent 1px),
+                    radial-gradient(circle at 80% 90%, white 1px, transparent 1px);
+            }
+            20% { 
+                background-image: 
+                    radial-gradient(circle at 30% 10%, white 1px, transparent 1px),
+                    radial-gradient(circle at 85% 45%, white 1px, transparent 1px),
+                    radial-gradient(circle at 10% 85%, white 1px, transparent 1px);
+            }
+            30% { 
+                background-image: 
+                    radial-gradient(circle at 70% 60%, white 1px, transparent 1px),
+                    radial-gradient(circle at 25% 35%, white 1px, transparent 1px),
+                    radial-gradient(circle at 90% 15%, white 1px, transparent 1px);
+            }
+            40% { 
+                background-image: 
+                    radial-gradient(circle at 45% 75%, white 1px, transparent 1px),
+                    radial-gradient(circle at 65% 20%, white 1px, transparent 1px),
+                    radial-gradient(circle at 35% 55%, white 1px, transparent 1px);
+            }
+            50% { 
+                background-image: 
+                    radial-gradient(circle at 55% 40%, white 1px, transparent 1px),
+                    radial-gradient(circle at 10% 60%, white 1px, transparent 1px),
+                    radial-gradient(circle at 85% 75%, white 1px, transparent 1px);
+            }
+            60% { 
+                background-image: 
+                    radial-gradient(circle at 25% 90%, white 1px, transparent 1px),
+                    radial-gradient(circle at 75% 15%, white 1px, transparent 1px),
+                    radial-gradient(circle at 50% 35%, white 1px, transparent 1px);
+            }
+            70% { 
+                background-image: 
+                    radial-gradient(circle at 80% 25%, white 1px, transparent 1px),
+                    radial-gradient(circle at 35% 65%, white 1px, transparent 1px),
+                    radial-gradient(circle at 15% 45%, white 1px, transparent 1px);
+            }
+            80% { 
+                background-image: 
+                    radial-gradient(circle at 65% 80%, white 1px, transparent 1px),
+                    radial-gradient(circle at 20% 20%, white 1px, transparent 1px),
+                    radial-gradient(circle at 90% 55%, white 1px, transparent 1px);
+            }
+            90% { 
+                background-image: 
+                    radial-gradient(circle at 40% 15%, white 1px, transparent 1px),
+                    radial-gradient(circle at 70% 85%, white 1px, transparent 1px),
+                    radial-gradient(circle at 25% 75%, white 1px, transparent 1px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="glitch-overlay">
+        <div class="scan-line"></div>
+    </div>
+    
+    <div class="cube-container">
+        <div class="cube">
+            <div class="face front">
+                <div class="noise-overlay"></div>
+            </div>
+            <div class="face back">
+                <div class="noise-overlay"></div>
+            </div>
+            <div class="face right">
+                <div class="noise-overlay"></div>
+            </div>
+            <div class="face left">
+                <div class="noise-overlay"></div>
+            </div>
+            <div class="face top">
+                <div class="noise-overlay"></div>
+            </div>
+            <div class="face bottom">
+                <div class="noise-overlay"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
